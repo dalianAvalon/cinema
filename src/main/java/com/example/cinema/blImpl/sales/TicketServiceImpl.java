@@ -41,65 +41,13 @@ public class TicketServiceImpl implements TicketService {
     @Override
     @Transactional
     public ResponseVO addTicket(TicketForm ticketForm) {
-        try{
-            List<SeatForm> seats=ticketForm.getSeats();
-            List<Ticket> tickets=new ArrayList<Ticket>();
-            for (int i=0;i<seats.size();i++){
-                SeatForm item=seats.get(i);
-                ticket.setUserId(ticketForm.getUserId());
-                ticket.setScheduleId(ticketForm.getScheduleId());
-                ticket.setRowIndex(item.getRowIndex());
-                ticket.setColumnIndex(item.getColumnIndex());
-                ticket.setState(0);
-                tickets.add(ticket);
-            }
-
-            if(tickets.size()==1){
-                ticketMapper.insertTicket(tickets.get(0));
-            }
-            else{
-                ticketMapper.insertTickets(tickets);
-            }
-            return ResponseVO.buildSuccess();
-        }catch(Exception e){
-            e.printStackTrace();
-            return ResponseVO.buildFailure("失败");
-        }
+        
     }
 
     @Override
     @Transactional
     public ResponseVO completeTicket(List<Integer> id, int couponId) {
-        try{
-            ticket=ticketMapper.selectTicketById(id.get(0));
-            int userId=ticket.getUserId();
-            audiencePrice.setUserId(userId);
-            int scheduleId=ticket.getScheduleId();
-            ScheduleItem scheduleItem=scheduleService.getScheduleItemById(scheduleId);
-            double fare=scheduleItem.getFare();
-
-            coupon=couponMapper.selectById(couponId);
-            double total=id.size()*fare;
-            if(coupon!=null) {
-                double targetAmount = coupon.getTargetAmount();
-                double discountAmount = coupon.getDiscountAmount();
-                if (targetAmount <= fare) {
-                    total = total - discountAmount;
-                }
-            }
-
-
-            audiencePrice.setTotalPrice(total);
-            for(int ticketId:id){
-                ticketMapper.updateTicketState(ticketId,1);
-            }
-
-            return ResponseVO.buildSuccess();
-
-        }catch(Exception e){
-            e.printStackTrace();
-            return ResponseVO.buildFailure("失败");
-        }
+        
     }
 
     @Override
@@ -124,30 +72,14 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public ResponseVO getTicketByUser(int userId) {
-        try{
-            List<Ticket> tickets=ticketMapper.selectTicketByUser(userId);
-            if(tickets!=null){
-                for(int i=0;i<tickets.size();i++){
-                    ticket=tickets.get(i);
-
-                }return ResponseVO.buildSuccess(new TicketVO());
-
-            }
-            else{
-                return ResponseVO.buildSuccess(null);
-            }
-
-        }catch(Exception e){
-            e.printStackTrace();
-            return ResponseVO.buildFailure("失败");
-        }
+        
     }
 
     @Override
     @Transactional
     public ResponseVO completeByVIPCard(List<Integer> id, int couponId) {
         try{
-            ticket=ticketMapper.selectTicketById(id.get(0));
+           ticket=ticketMapper.selectTicketById(id.get(0));
             int userId=ticket.getUserId();
             audiencePrice.setUserId(userId);
             int scheduleId=ticket.getScheduleId();
@@ -167,9 +99,8 @@ public class TicketServiceImpl implements TicketService {
                 }
             }
 
-            total=balance-total;
             audiencePrice.setTotalPrice(total);
-            vipCard.setBalance(total);
+            vipCard.setBalance(balance-total);
             for(int ticketId:id){
                 ticketMapper.updateTicketState(ticketId,1);
             }
@@ -186,6 +117,7 @@ public class TicketServiceImpl implements TicketService {
                 couponMapper.insertCoupon(coupon);
             }
 
+            
             return ResponseVO.buildSuccess();
         }catch(Exception e){
             e.printStackTrace();
